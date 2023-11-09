@@ -4,8 +4,6 @@ project(capstone-demo)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_subdirectory(vendor/freeglut3)
-
 add_executable(${PROJECT_NAME} main.cpp)
 
-target_link_libraries(${PROJECT_NAME} freeglut opengl32)
+target_link_libraries(${PROJECT_NAME} freeglut opengl32 glew32 glu32)

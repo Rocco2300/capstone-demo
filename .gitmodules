@@ -1,4 +1,0 @@
-[submodule "vendor/freeglut3"]
-	path = vendor/freeglut3
-	url = https://github.com/FreeGLUTProject/freeglut.git
-	branch = v3.4.0
