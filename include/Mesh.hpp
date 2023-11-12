@@ -13,16 +13,21 @@ private:
     uint32_t m_height{};
 
     std::vector<float> m_vertices;
-    std::vector<unsigned int> m_indices;
+    std::vector<uint32_t> m_indices;
 
 public:
     Mesh() = default;
     Mesh(uint32_t width, uint32_t height);
 
+    void generate(uint32_t width, uint32_t height);
+
+    std::vector<uint32_t>& getIndices();
+
     void bind();
     void unbind();
 
 private:
+    void bindBufferData();
     void generateMeshData();
     uint32_t indexFrom2D(int x, int y);
 };

@@ -1,15 +1,22 @@
 #include <iostream>
 
 // clang-format off
+#include "Mesh.hpp"
+
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <chrono>
+
+using namespace std::chrono;
 // clang-format on
 
 const std::string Path = "C:/Users/grigo/Repos/capstone-demo/";
+
+Mesh mesh;
 
 static std::string readShader(const std::string& filePath) {
     std::ifstream in(filePath);
@@ -70,11 +77,15 @@ static unsigned int createShader(const std::string& vertexShader,
 }
 
 void render() {
+    auto start = high_resolution_clock::now();
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_INT, 0);
 
     glutSwapBuffers();
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    std::cout << static_cast<int>(1 / (duration.count() / 1'000'000.f)) << '\n';
 }
 
 void reshape(int width, int height) {
@@ -97,20 +108,6 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
     glutCreateWindow("Capstone Demo");
 
-    // clang-format off
-    std::vector<float> vertices = {
-        0.5f,  0.5f, 0.0f,  // top right
-        0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-        -0.5f,  0.5f, 0.0f   // top left
-    };
-
-    std::vector<unsigned int> indices = {
-        0, 1, 3,
-        1, 2, 3
-    };
-    // clang-format on
-
     GLenum err = glewInit();
     if (err != GLEW_OK) {
         std::cerr << "Error initializing glew!\n";
@@ -118,27 +115,12 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    mesh.generate(1024, 1024);
 
-    unsigned int VAO, VBO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    mesh.bind();
 
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0],
-                 GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-                          (void*) 0);
-    std::string vertexShader = readShader(Path + "shaders/triangle.vert");
-    std::string fragmentShader = readShader(Path + "shaders/triangle.frag");
-
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float),
-                 &indices[0], GL_STATIC_DRAW);
+    std::string vertexShader = readShader(Path + "shaders/mesh.vert");
+    std::string fragmentShader = readShader(Path + "shaders/mesh.frag");
 
     unsigned int shader;
     shader = createShader(vertexShader, fragmentShader);
